@@ -1,7 +1,6 @@
 <template>
   <v-container class="container">
-    <v-row class="mt-5">
-    </v-row>
+    <v-row class="mt-5"> </v-row>
     <v-row>
       <v-col>
         <div ref="canvas" class="canvas" />
@@ -14,8 +13,8 @@
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue'
-import * as THREE from 'three'
+import { ref, onMounted, watch } from 'vue';
+import * as THREE from 'three';
 
 export default {
   name: 'ThreeScene',
@@ -23,42 +22,61 @@ export default {
     const canvas = ref(null);
     const zPos = ref(1);
 
-    onMounted(() => {
-      // Create scene, camera, renderer, etc.
+    const createScene = () => {
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
       const renderer = new THREE.WebGLRenderer();
       renderer.setSize(500, 500);
       canvas.value?.appendChild(renderer.domElement);
+      return { scene, camera, renderer };
+    };
 
-      // Add objects, lights, etc. to the scene
+    const createCube = () => {
       const geometry = new THREE.BoxGeometry();
-
       const material = new THREE.MeshBasicMaterial({ color: '#ffffff' });
-      const cube = new THREE.Mesh(geometry, material);
-      scene.add(cube);
+      return new THREE.Mesh(geometry, material);
+    };
+
+    const createPlane = () => {
+      const geometry = new THREE.PlaneGeometry(10, 10);
+      const material = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+      return new THREE.Mesh(geometry, material);
+    };
+
+    const createSphere = () => {
+      const geometry = new THREE.SphereGeometry(5, 32, 32);
+      const material = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+      return new THREE.Mesh(geometry, material);
+    };
+
+    onMounted(() => {
+      const { scene, camera, renderer } = createScene();
+
+      const cube = createCube();
+      const plane = createPlane();
+      const sphere = createSphere();
+
+      scene.add(plane);
 
       // Animate function
-      const animate = function () {
-        requestAnimationFrame(animate);
-        cube.rotation.x += 0.01
-        cube.rotation.y += 0.01
+      const animate = function (shape) {
+        requestAnimationFrame(() => animate(shape));
+        shape.rotation.x += 0.01;
+        shape.rotation.y += 0.01;
         renderer.render(scene, camera);
-      }
-      animate();
+      };
+
+      animate(plane);
 
       // Watch for changes in zPos and update camera position accordingly
       watch(zPos, (newValue) => {
         camera.position.z = parseFloat(newValue);
       });
-    })
+    });
 
-    return {
-      canvas,
-      zPos
-    }
+    return { canvas, zPos };
   }
-}
+};
 </script>
 
 <style>
