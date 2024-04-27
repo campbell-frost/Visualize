@@ -1,13 +1,13 @@
 <template>
   <v-container class="container">
     <v-row class="mt-5">
-      <v-col>
-        <v-slider v-model="zPos" label="Z position" :step="1" max="100" min="2" track-color="grey" />
-      </v-col>
     </v-row>
     <v-row>
       <v-col>
         <div ref="canvas" class="canvas" />
+      </v-col>
+      <v-col>
+        <v-slider v-model="zPos" label="Z position" :step="1" max="100" min="2" track-color="grey" />
       </v-col>
     </v-row>
   </v-container>

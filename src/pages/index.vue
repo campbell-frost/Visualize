@@ -1,5 +1,6 @@
 <template>
-  <Visualize/>
+  <Navbar />
+  <Visualize />
 </template>
 
 <script lang="ts" setup>
