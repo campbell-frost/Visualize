@@ -1,6 +1,10 @@
 <template>
   <div ref="container">
-    <v-text-field v-model="zPos" label="Z Position"></v-text-field>
+    <v-row class="mt-5">
+      <v-col>
+        <v-slider v-model="zPos" label="Z position" :step="1" max="100" min="2" track-color="grey" />
+      </v-col>
+      </v-row>
   </div>
 </template>
 
@@ -12,7 +16,7 @@ export default {
   name: 'ThreeScene',
   setup() {
     const container = ref(null);
-    const zPos = ref('5');
+    const zPos = ref(1);
 
     onMounted(() => {
       // Create scene, camera, renderer, etc.
@@ -24,8 +28,8 @@ export default {
 
       // Add objects, lights, etc. to the scene
       const geometry = new THREE.BoxGeometry();
-      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-      const cube = new THREE.Mesh(geometry, material)
+      const material = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+      const cube = new THREE.Mesh(geometry, material);
       scene.add(cube);
 
       // Animate function
