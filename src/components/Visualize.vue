@@ -1,11 +1,16 @@
 <template>
-  <div ref="container">
+  <v-container class="container">
     <v-row class="mt-5">
       <v-col>
         <v-slider v-model="zPos" label="Z position" :step="1" max="100" min="2" track-color="grey" />
       </v-col>
-      </v-row>
-  </div>
+    </v-row>
+    <v-row>
+      <v-col>
+        <div ref="canvas" class="canvas" />
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -15,19 +20,20 @@ import * as THREE from 'three'
 export default {
   name: 'ThreeScene',
   setup() {
-    const container = ref(null);
+    const canvas = ref(null);
     const zPos = ref(1);
 
     onMounted(() => {
       // Create scene, camera, renderer, etc.
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
       const renderer = new THREE.WebGLRenderer();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      container.value?.appendChild(renderer.domElement);
+      renderer.setSize(500, 500);
+      canvas.value?.appendChild(renderer.domElement);
 
       // Add objects, lights, etc. to the scene
       const geometry = new THREE.BoxGeometry();
+
       const material = new THREE.MeshBasicMaterial({ color: '#ffffff' });
       const cube = new THREE.Mesh(geometry, material);
       scene.add(cube);
@@ -48,9 +54,17 @@ export default {
     })
 
     return {
-      container,
+      canvas,
       zPos
     }
   }
 }
 </script>
+
+<style>
+.canvas {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+</style>
