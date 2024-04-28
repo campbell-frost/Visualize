@@ -1,6 +1,7 @@
 <template>
   <Navbar />
   <Visualize />
+  <Canvas />
 </template>
 
 <script lang="ts" setup>
