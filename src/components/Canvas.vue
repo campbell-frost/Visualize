@@ -73,7 +73,7 @@ export default {
 
     const updateRendererSize = () => {
       if (prevWidth.value !== width.value) {
-        renderer.setSize(width.value, width.value);
+        renderer.setSize(window.innerWidth/2, window.innerWidth/2);
         camera.aspect = 1;
         camera.updateProjectionMatrix();
         prevWidth.value = width.value;
