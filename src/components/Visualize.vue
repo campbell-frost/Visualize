@@ -24,6 +24,7 @@ const soundFile = ref(null);
 const isPlaying = ref(false);
 const audioElement = ref(null);
 const currentTime = ref(0);
+//const seekTime = ref(0);
 const duration = ref(0);
 const loadAudio = () => {
   if (soundFile.value) {
@@ -52,12 +53,16 @@ const togglePlayback = () => {
 // Not working yet
 const seekAudio = () => {
   if (audioElement.value) {
-    audioElement.value.currentTime = currentTime.value;
+    //audioElement.value.currentTime = currentTime.value;
+    //seekValue = audioElement.value.duration * (seekTime.value * 100);
   }
 };
 </script>
 
 <style>
+*{
+  flex-wrap: wrap;
+}
 .canvas {
   display: flex;
   justify-content: center;
