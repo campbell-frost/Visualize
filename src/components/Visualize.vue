@@ -18,57 +18,51 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import { ref } from 'vue';
-
-
-export default {
-  name: 'MusicPlayer',
-  setup() {
-
-    const soundFile = ref(null);
-    const isPlaying = ref(false);
-    const audioElement = ref(null);
-    const currentTime = ref(0);
-    const duration = ref(0);
-    const loadAudio = () => {
-      if (soundFile.value) {
-        audioElement.value = new Audio(URL.createObjectURL(soundFile.value));
-        audioElement.value.addEventListener('loadedmetadata', () => {
-          duration.value = audioElement.value.duration;
-        });
-        audioElement.value.addEventListener('timeupdate', () => {
-          if (!audioElement.value.paused && !audioElement.value.ended) {
-            currentTime.value = audioElement.value.currentTime;
-          }
-        });
+const soundFile = ref(null);
+const isPlaying = ref(false);
+const audioElement = ref(null);
+const currentTime = ref(0);
+//const seekTime = ref(0);
+const duration = ref(0);
+const loadAudio = () => {
+  if (soundFile.value) {
+    audioElement.value = new Audio(URL.createObjectURL(soundFile.value));
+    audioElement.value.addEventListener('loadedmetadata', () => {
+      duration.value = audioElement.value.duration;
+    });
+    audioElement.value.addEventListener('timeupdate', () => {
+      if (!audioElement.value.paused && !audioElement.value.ended) {
+        currentTime.value = audioElement.value.currentTime;
       }
-    };
+    });
+  }
+};
+const togglePlayback = () => {
+  if (audioElement.value) {
+    if (isPlaying.value) {
+      audioElement.value.pause();
+    } else {
+      audioElement.value.play();
+    }
+    isPlaying.value = !isPlaying.value;
+  }
+};
 
-    const togglePlayback = () => {
-      if (audioElement.value) {
-        if (isPlaying.value) {
-          audioElement.value.pause();
-        } else {
-          audioElement.value.play();
-        }
-        isPlaying.value = !isPlaying.value;
-      }
-    };
-
-    // Not working yet
-    const seekAudio = () => {
-      if (audioElement.value) {
-        audioElement.value.currentTime = currentTime.value;
-      }
-    };
-
-    return { soundFile, isPlaying, togglePlayback, currentTime, duration, loadAudio, seekAudio, };
+// Not working yet
+const seekAudio = () => {
+  if (audioElement.value) {
+    //audioElement.value.currentTime = currentTime.value;
+    //seekValue = audioElement.value.duration * (seekTime.value * 100);
   }
 };
 </script>
 
 <style>
+*{
+  flex-wrap: wrap;
+}
 .canvas {
   display: flex;
   justify-content: center;
