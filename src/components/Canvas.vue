@@ -24,21 +24,21 @@
         ></v-btn>
         <input
           type="range"
+          v-model="progress"
+          @change="seekAudio"
           min="0"
           max="100"
           step="1"
-          label="Progress"
-          v-model="progress"
-          @input="seekAudio"
+          class="slider rangeSlider w-full h-full"
         />
         <input
           type="range"
+          v-model="volume"
+          @change="adjustVolume"
           min="0"
           max="1"
           step="0.01"
-          label="Volume"
-          v-model="volume"
-          @input="adjustVolume"
+          class="slider w-full h-full"
         />
       </v-card-item>
     </v-card>
@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import * as THREE from "three";
 import { createNoise3D } from "simplex-noise";
 
@@ -108,7 +108,7 @@ const handleFileChange = (event: Event) => {
   }
 };
 
-const playMusic = () => {
+const playMusic = async () => {
   if (!audio.value) return;
 
   const audioSource = context.createMediaElementSource(audio.value);
@@ -119,6 +119,10 @@ const playMusic = () => {
 
   bufferLength = analyser.frequencyBinCount;
   dataArray = new Uint8Array(bufferLength);
+
+  if (context.state === "suspended") {
+    await context.resume();
+  }
 
   updateAudio();
   audio.value.play();
@@ -238,9 +242,12 @@ const animate = () => {
   renderer.render(scene, camera);
 };
 
-const togglePlay = () => {
+const togglePlay = async () => {
   if (audio.value) {
     if (audio.value.paused) {
+      if (context.state === "suspended") {
+        await context.resume();
+      }
       audio.value.play();
       isPlaying.value = true;
     } else {
