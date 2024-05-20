@@ -9,7 +9,6 @@ import { registerPlugins } from './plugins'
 
 // Components
 import App from './App.vue'
-import Visualize from './components/Visualize'
 
 // Composables
 import { createApp } from 'vue'
@@ -18,6 +17,6 @@ const app = createApp(App)
 
 registerPlugins(app)
 
-app.component('Visualize', Visualize)
+app.component('Visualize')
 
 app.mount('#app')
