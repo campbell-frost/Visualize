@@ -1,49 +1,57 @@
 <template>
   <v-container>
-    <v-card class="m-4 p-4">
-      <v-card-item>
-        <v-file-input
-          clearable
-          chips
-          variant="outlined"
-          label="Upload a music file"
-          type="file"
-          id="mainFile"
-          ref="mainFile"
-          class="mt-5"
-          prepend-icon=""
-        />
-      </v-card-item>
-      <audio id="audio" ref="audio"></audio>
+    <div id="execute" ref="execute">
+      <v-card class="m-4 p-4">
+        <v-card-item>
+          <v-file-input
+            clearable
+            chips
+            variant="outlined"
+            label="Upload a music file"
+            type="file"
+            id="mainFile"
+            ref="mainFile"
+            class="mt-5"
+            prepend-icon=""
+          />
+        </v-card-item>
+        <audio id="audio" ref="audio"></audio>
 
-      <v-card-item id="controls">
-        <v-btn
-          @click="togglePlay"
-          :icon="isPlaying ? 'mdi-pause' : 'mdi-play'"
-          class="play-pause-btn my-2 mx-2"
-        ></v-btn>
-        <input
-          type="range"
-          v-model="progress"
-          @change="seekAudio"
-          min="0"
-          max="100"
-          step="1"
-          class="slider rangeSlider w-full h-full"
-        />
-        <input
-          type="range"
-          v-model="volume"
-          @change="adjustVolume"
-          min="0"
-          max="1"
-          step="0.01"
-          class="slider w-full h-full"
-        />
-      </v-card-item>
-    </v-card>
-
-    <div id="execute" ref="execute"></div>
+        <v-card-item id="controls">
+          <v-btn
+            @click="togglePlay"
+            :icon="isPlaying ? 'mdi-pause' : 'mdi-play'"
+            class="play-pause-btn my-2 mx-2"
+          ></v-btn>
+          <input
+            type="range"
+            v-model="progress"
+            @change="seekAudio"
+            min="0"
+            max="100"
+            step="1"
+            class="slider rangeSlider w-full h-full"
+          />
+          <input
+            type="range"
+            v-model="volume"
+            @change="adjustVolume"
+            min="0"
+            max="1"
+            step="0.01"
+            class="slider w-full h-full"
+          />
+          <input
+            type="range"
+            v-model="intensity"
+            min="0"
+            max="100"
+            step="1"
+            class="slider w-full h-full"
+          />
+        </v-card-item>
+      </v-card>
+    </div>
   </v-container>
 </template>
 
@@ -71,6 +79,7 @@ let object: THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshLambertMaterial>;
 const isPlaying = ref(false);
 const progress = ref(0);
 const volume = ref(0.5);
+const intensity = ref<number>(9);
 
 // Utility functions
 const average = (arr: Uint8Array) => arr.reduce((sum, b) => sum + b, 0) / arr.length;
@@ -161,12 +170,6 @@ const addLighting = () => {
   scene.add(spotLight);
 };
 
-const resizeWindow = () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-};
-
 const updateAudio = () => {
   analyser.getByteFrequencyData(dataArray);
 
@@ -199,7 +202,7 @@ const tuneObject = (
   const positionAttribute = geometry.getAttribute("position");
   const vertex = new THREE.Vector3();
   const offset = geometry.parameters.radius;
-  const amplify = 7;
+
   const time = window.performance.now();
   const rf = 0.00001;
 
@@ -210,7 +213,7 @@ const tuneObject = (
       offset +
       bassFr +
       noise(vertex.x + time * rf * 7, vertex.y + time * rf * 8, vertex.z + time * rf * 9) *
-        amplify *
+        Number(intensity.value) *
         treFr;
     vertex.multiplyScalar(distance);
     positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
@@ -220,8 +223,6 @@ const tuneObject = (
 };
 
 const initVisualizer = () => {
-  window.addEventListener("resize", resizeWindow);
-
   mainFile.value?.addEventListener("change", handleFileChange);
 
   audio.value?.addEventListener("play", playMusic);
@@ -230,11 +231,27 @@ const initVisualizer = () => {
   createObject();
   addLighting();
 
+  const container = execute.value; // Reference to the container div
+  const width = container?.clientWidth || window.innerWidth;
+  const height = container?.clientHeight || window.innerHeight;
+
   renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  execute.value?.appendChild(renderer.domElement);
+  renderer.setSize(width, height);
+  container?.appendChild(renderer.domElement);
+
+  window.addEventListener("resize", resizeWindow);
 
   animate();
+};
+
+const resizeWindow = () => {
+  const container = execute.value; // Reference to the container div
+  const width = container?.clientWidth || window.innerWidth;
+  const height = container?.clientHeight || window.innerHeight;
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
 };
 
 const animate = () => {
@@ -281,11 +298,16 @@ onMounted(() => {
   }
 });
 </script>
-
 <style scoped>
 #controls {
   display: flex;
   align-items: center;
   gap: 10px;
 }
+
+#execute {
+  width: 100%;
+  height: 100vh;
+}
+
 </style>
