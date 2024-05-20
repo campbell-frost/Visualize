@@ -17,6 +17,7 @@
         </v-card-item>
         <audio id="audio" ref="audio" accept="audio/*"></audio>
 
+
         <v-card-item id="controls">
           <v-btn
             @click="togglePlay"
@@ -59,7 +60,9 @@
 import { ref, onMounted } from "vue";
 import * as THREE from "three";
 import { createNoise3D } from "simplex-noise";
+
 import * as dat from "dat.gui";
+
 
 // Refs for DOM elements
 const mainFile = ref<HTMLInputElement | null>(null);
@@ -68,7 +71,9 @@ const execute = ref<HTMLDivElement | null>(null);
 
 // Reactive state variables
 const noise = createNoise3D();
+
 const gui = new dat.GUI();
+
 let context: AudioContext;
 let analyser: AnalyserNode;
 let dataArray: Uint8Array;
@@ -122,6 +127,7 @@ const handleFileChange = (event: Event) => {
 const playMusic = async () => {
   if (!audio.value) return;
 
+
   const audioSource = context.createMediaElementSource(audio.value);
   analyser = context.createAnalyser();
   audioSource.connect(analyser);
@@ -147,7 +153,7 @@ const createScene = () => {
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(0, 0, 100);
   camera.lookAt(scene.position);
-
+  
   scene.add(group);
 };
 const createObject = () => {
@@ -286,7 +292,6 @@ const initVisualizer = () => {
 
   animate(1);
 };
-
 const resizeWindow = () => {
   const container = execute.value; // Reference to the container div
   const width = container?.clientWidth || window.innerWidth;
@@ -296,6 +301,7 @@ const resizeWindow = () => {
   camera.updateProjectionMatrix();
   renderer.setSize(width, height);
 };
+
 
 // Performs animation based on given time
 const animate = (time) => {
@@ -359,3 +365,4 @@ onMounted(() => {
 }
 
 </style>
+
