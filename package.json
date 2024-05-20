@@ -11,6 +11,7 @@
     "@mdi/font": "6.2.95",
     "@vueuse/core": "^10.9.0",
     "core-js": "^3.34.0",
+    "dat.gui": "^0.7.9",
     "roboto-fontface": "*",
     "simplex-noise": "^4.0.1",
     "three": "^0.164.1",

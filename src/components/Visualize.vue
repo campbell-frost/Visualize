@@ -50,13 +50,11 @@ const togglePlayback = () => {
   }
 };
 
-// Not working yet
-const seekAudio = () => {
-  if (audioElement.value) {
-    //audioElement.value.currentTime = currentTime.value;
-    //seekValue = audioElement.value.duration * (seekTime.value * 100);
-  }
-};
+//const seekAudio = () => {
+//  if (audio.value) {
+//    audio.value.currentTime = (audio.value.duration * progress.value) / 100;
+//  }
+//};
 </script>
 
 <style>

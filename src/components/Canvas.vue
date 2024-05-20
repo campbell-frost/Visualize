@@ -15,7 +15,8 @@
             prepend-icon=""
           />
         </v-card-item>
-        <audio id="audio" ref="audio"></audio>
+        <audio id="audio" ref="audio" accept="audio/*"></audio>
+
 
         <v-card-item id="controls">
           <v-btn
@@ -60,6 +61,9 @@ import { ref, onMounted } from "vue";
 import * as THREE from "three";
 import { createNoise3D } from "simplex-noise";
 
+import * as dat from "dat.gui";
+
+
 // Refs for DOM elements
 const mainFile = ref<HTMLInputElement | null>(null);
 const audio = ref<HTMLAudioElement | null>(null);
@@ -67,6 +71,9 @@ const execute = ref<HTMLDivElement | null>(null);
 
 // Reactive state variables
 const noise = createNoise3D();
+
+const gui = new dat.GUI();
+
 let context: AudioContext;
 let analyser: AnalyserNode;
 let dataArray: Uint8Array;
@@ -120,6 +127,7 @@ const handleFileChange = (event: Event) => {
 const playMusic = async () => {
   if (!audio.value) return;
 
+
   const audioSource = context.createMediaElementSource(audio.value);
   analyser = context.createAnalyser();
   audioSource.connect(analyser);
@@ -145,12 +153,13 @@ const createScene = () => {
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(0, 0, 100);
   camera.lookAt(scene.position);
-
+  
   scene.add(group);
 };
-
 const createObject = () => {
-  const geometry = new THREE.IcosahedronGeometry(10, 3);
+  const radius = 10;
+  const detail = 3;
+  const geometry = new THREE.IcosahedronGeometry(radius, detail);
   const material = new THREE.MeshLambertMaterial({
     color: "#f3f3f3",
     wireframe: true,
@@ -159,6 +168,46 @@ const createObject = () => {
   object = new THREE.Mesh(geometry, material);
   group.add(object);
 };
+// options for the GUI
+const options = {
+  color: 0x0000FF, speed: 0.01, wireframe: false,
+};
+
+// changes the color of the object
+gui.addColor(options, 'color').onChange(function(e) {
+    object.material.color.set(e);
+});
+
+// manipulates the rotation speed of the object
+gui.add(options, 'speed', 0, 0.1); 
+
+// manipulates the wireframe by check-mark button
+gui.add(options, 'wireframe').onChange(function(e) {
+    object.material.wireframe = e;
+});
+
+// manipulates the rotation speed
+let pace = 0;
+
+// value of the object that will be manipulated by GUI
+const objectValue = {
+  radius: 1,
+  detail: 0,
+};
+
+// Reshape the object size using the manipulated value
+const reshapeObject = () => {
+  const newObject = new THREE.IcosahedronGeometry(objectValue.radius, objectValue.detail)
+  object.geometry.dispose();
+  object.geometry = newObject;
+};
+
+// Code for Object GUI manipulation
+const objectFolder = gui.addFolder('Object');
+const objectPropertiesFolder = objectFolder.addFolder('Properties');
+objectPropertiesFolder.add(objectValue, 'radius', 0.1, 10).onChange(reshapeObject);
+objectPropertiesFolder.add(objectValue, 'detail', 0, 5).step(1).onChange(reshapeObject);
+
 
 const addLighting = () => {
   const ambientLight = new THREE.AmbientLight(0xaaaaaa);
@@ -241,9 +290,8 @@ const initVisualizer = () => {
 
   window.addEventListener("resize", resizeWindow);
 
-  animate();
+  animate(1);
 };
-
 const resizeWindow = () => {
   const container = execute.value; // Reference to the container div
   const width = container?.clientWidth || window.innerWidth;
@@ -254,7 +302,13 @@ const resizeWindow = () => {
   renderer.setSize(width, height);
 };
 
-const animate = () => {
+
+// Performs animation based on given time
+const animate = (time) => {
+  object.rotation.y = time/1000;
+  pace += options.speed;
+  // Bounces the object
+  object.position.y = 4 * Math.abs(Math.sin(pace)); 
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 };
@@ -311,3 +365,4 @@ onMounted(() => {
 }
 
 </style>
+
