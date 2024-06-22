@@ -16,8 +16,6 @@
           />
         </v-card-item>
         <audio id="audio" ref="audio" accept="audio/*"></audio>
-
-
         <v-card-item id="controls">
           <v-btn
             @click="togglePlay"
@@ -31,7 +29,7 @@
             min="0"
             max="100"
             step="1"
-            class="slider rangeSlider w-full h-full"
+            class="slider"
           />
           <input
             type="range"
@@ -40,7 +38,7 @@
             min="0"
             max="1"
             step="0.01"
-            class="slider w-full h-full"
+            class="slider"
           />
           <input
             type="range"
@@ -48,7 +46,7 @@
             min="0"
             max="100"
             step="1"
-            class="slider w-full h-full"
+            class="slider"
           />
         </v-card-item>
       </v-card>
@@ -62,7 +60,6 @@ import * as THREE from "three";
 import { createNoise3D } from "simplex-noise";
 
 import * as dat from "dat.gui";
-
 
 // Refs for DOM elements
 const mainFile = ref<HTMLInputElement | null>(null);
@@ -127,7 +124,6 @@ const handleFileChange = (event: Event) => {
 const playMusic = async () => {
   if (!audio.value) return;
 
-
   const audioSource = context.createMediaElementSource(audio.value);
   analyser = context.createAnalyser();
   audioSource.connect(analyser);
@@ -153,7 +149,7 @@ const createScene = () => {
   camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(0, 0, 100);
   camera.lookAt(scene.position);
-  
+
   scene.add(group);
 };
 const createObject = () => {
@@ -170,20 +166,22 @@ const createObject = () => {
 };
 // options for the GUI
 const options = {
-  color: 0x0000FF, speed: 0.01, wireframe: false,
+  color: 0x0000ff,
+  speed: 0.01,
+  wireframe: false,
 };
 
 // changes the color of the object
-gui.addColor(options, 'color').onChange(function(e) {
-    object.material.color.set(e);
+gui.addColor(options, "color").onChange(function (e) {
+  object.material.color.set(e);
 });
 
 // manipulates the rotation speed of the object
-gui.add(options, 'speed', 0, 0.1); 
+gui.add(options, "speed", 0, 0.1);
 
 // manipulates the wireframe by check-mark button
-gui.add(options, 'wireframe').onChange(function(e) {
-    object.material.wireframe = e;
+gui.add(options, "wireframe").onChange(function (e) {
+  object.material.wireframe = e;
 });
 
 // manipulates the rotation speed
@@ -197,17 +195,16 @@ const objectValue = {
 
 // Reshape the object size using the manipulated value
 const reshapeObject = () => {
-  const newObject = new THREE.IcosahedronGeometry(objectValue.radius, objectValue.detail)
+  const newObject = new THREE.IcosahedronGeometry(objectValue.radius, objectValue.detail);
   object.geometry.dispose();
   object.geometry = newObject;
 };
 
 // Code for Object GUI manipulation
-const objectFolder = gui.addFolder('Object');
-const objectPropertiesFolder = objectFolder.addFolder('Properties');
-objectPropertiesFolder.add(objectValue, 'radius', 0.1, 10).onChange(reshapeObject);
-objectPropertiesFolder.add(objectValue, 'detail', 0, 5).step(1).onChange(reshapeObject);
-
+const objectFolder = gui.addFolder("Object");
+const objectPropertiesFolder = objectFolder.addFolder("Properties");
+objectPropertiesFolder.add(objectValue, "radius", 0.1, 10).onChange(reshapeObject);
+objectPropertiesFolder.add(objectValue, "detail", 0, 5).step(1).onChange(reshapeObject);
 
 const addLighting = () => {
   const ambientLight = new THREE.AmbientLight(0xaaaaaa);
@@ -302,13 +299,12 @@ const resizeWindow = () => {
   renderer.setSize(width, height);
 };
 
-
 // Performs animation based on given time
-const animate = (time) => {
-  object.rotation.y = time/1000;
+const animate = (time: number) => {
+  object.rotation.y = time / 1000;
   pace += options.speed;
   // Bounces the object
-  object.position.y = 4 * Math.abs(Math.sin(pace)); 
+  object.position.y = 4 * Math.abs(Math.sin(pace));
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
 };
@@ -353,16 +349,72 @@ onMounted(() => {
 });
 </script>
 <style scoped>
-#controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  #controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-#execute {
-  width: 100%;
-  height: 100vh;
-}
+  #execute {
+    width: 100%;
+    height: 100vh;
+  }
 
+  .range-slider {
+    width: 100%;
+  }
+
+  .slider {
+    width: calc(100% - ( 73px));
+    height: 10px;
+    border-radius: 5px;
+    background: grey;
+    outline: none;
+    padding: 0;
+    margin: 0;
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: black;
+      cursor: pointer;
+      transition: background .15s ease-in-out;
+
+      &:hover {
+        background: "teal";
+      }
+    }
+
+    &:active::-webkit-slider-thumb {
+      background: "red";
+    }
+
+    &::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border: 0;
+      border-radius: 50%;
+      background: "teal";
+      cursor: pointer;
+      transition: background .15s ease-in-out;
+
+      &:hover {
+        background: "red";
+      }
+    }
+
+    &:active::-moz-range-thumb {
+      background: "red";
+    }
+
+    &:focus {
+
+      &::-webkit-slider-thumb {
+        box-shadow: 0 0 0 3px "red",
+                    0 0 0 6px "teal";
+      }
+    }
+  }
 </style>
-
