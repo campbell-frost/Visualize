@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-export class ThreeJSSetup {
+export class ThreeJsUtility {
   scene: THREE.Scene;
   group: THREE.Group;
   camera: THREE.PerspectiveCamera;

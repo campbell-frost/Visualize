@@ -22,19 +22,17 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import * as THREE from "three";
-import { createNoise3D } from "simplex-noise";
-
-import { ThreeJSSetup } from "../utils/threeJSSetup";
+import { ThreeJsUtility} from "../utils/threeJsUtility";
+import { SimplexNoiseUtility } from "../utils/simplexNoiseUtility";
 
 // Refs for DOM elements
 const mainFile = ref<HTMLInputElement | null>(null);
 const audio = ref<HTMLAudioElement | null>(null);
 const container = ref<HTMLElement | null>(null);
 
-// Helper classes
-let threeJSSetup: ThreeJSSetup | null = null;
-
-const noise = createNoise3D();
+// Utility classes
+let threeJsUtility: ThreeJsUtility| null = null;
+let simplexNoiseUtility: SimplexNoiseUtility | null = null;
 
 let context: AudioContext;
 let analyser: AnalyserNode;
@@ -44,8 +42,6 @@ const isPlaying = ref(false);
 const progress = ref(0);
 const volume = ref(0.5);
 const intensity = ref<number>(9);
-const RF = 0.00001;
-type Mesh = THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshLambertMaterial>;
 
 // Utility functions
 const average = (arr: Uint8Array) => arr.reduce((sum, b) => sum + b, 0) / arr.length;
@@ -105,7 +101,7 @@ const playMusic = async () => {
 };
 
 const updateAudio = () => {
-  if(!threeJSSetup) return;
+  if(!threeJsUtility || !simplexNoiseUtility) return;
   analyser.getByteFrequencyData(dataArray);
   const halfLength = dataArray.length / 2;
 
@@ -117,40 +113,17 @@ const updateAudio = () => {
   const lowerMaxFr = maximum(lowerHalfData) / lowerHalfData.length;
   const upperAvgFr = average(upperHalfData) / upperHalfData.length;
 
-  tuneObject(
-    threeJSSetup.object,
+  simplexNoiseUtility.tuneObject(
+    threeJsUtility.object,
     modulation(Math.pow(lowerMaxFr, 0.8), 0, 1, 0, 8),
     modulation(upperAvgFr, 0, 1, 0, 4)
   );
 
-  threeJSSetup.group.rotation.y += 0.005;
-  threeJSSetup.renderer.render(threeJSSetup.scene,threeJSSetup.camera);
+  threeJsUtility.group.rotation.y += 0.005;
+  threeJsUtility.renderer.render(threeJsUtility.scene,threeJsUtility.camera);
   requestAnimationFrame(updateAudio);
 };
 
-const tuneObject = (mesh: Mesh, bassFr: number, treFr: number) => {
-  const geometry = mesh.geometry;
-  const positionAttribute = geometry.getAttribute("position");
-  const vertex = new THREE.Vector3();
-  const offset = geometry.parameters.radius;
-  const time = window.performance.now();
-
-  for (let i = 0; i < positionAttribute.count; i++) {
-    vertex.fromBufferAttribute(positionAttribute, i).normalize();
-
-    const distance = offset + bassFr +
-      noise(
-        vertex.x + time * RF * 70,
-        vertex.y + time * RF * 800,
-        vertex.z + time * RF * 9
-      ) * Number(intensity.value) * treFr;
-
-    vertex.multiplyScalar(distance);
-    positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
-  }
-
-  positionAttribute.needsUpdate = true;
-};
 
 const togglePlay = async () => {
   if (audio.value) {
@@ -181,14 +154,15 @@ const adjustVolume = () => {
 
 onMounted(() => {
   if (container.value) {
-    threeJSSetup = new ThreeJSSetup(container.value);
-    threeJSSetup.addLighting();
-    threeJSSetup.animate();
+    threeJsUtility = new ThreeJsUtility(container.value);
+    simplexNoiseUtility = new SimplexNoiseUtility(Number(intensity.value));
+    threeJsUtility.addLighting();
+    threeJsUtility.animate();
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
         const { width, height } = entry.contentRect;
-        threeJSSetup?.resize(width, height);
+        threeJsUtility?.resize(width, height);
       }
     });
 
@@ -210,10 +184,10 @@ onMounted(() => {
 
     onUnmounted(() => {
       resizeObserver.disconnect();
-      if (threeJSSetup) {
-        threeJSSetup.renderer.dispose();
-        threeJSSetup.object.geometry.dispose();
-        (threeJSSetup.object.material as THREE.Material).dispose();
+      if (threeJsUtility) {
+        threeJsUtility.renderer.dispose();
+        threeJsUtility.object.geometry.dispose();
+        (threeJsUtility.object.material as THREE.Material).dispose();
       }
       // Remove event listeners
       mainFile.value?.removeEventListener("change", handleFileChange);
