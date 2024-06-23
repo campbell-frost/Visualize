@@ -2,15 +2,17 @@ import IThreeJsUtility from "./threeJsUtility";
 import ISimplexNoiseUtility from "./simplexNoiseUtility";
 
 export default interface IAudioUtility {
-    isPlaying: boolean;
+  isPlaying: boolean;
+  progress: number;
+  volume: number; 
 
-    setupAudioContext(): void;
-    handleFileChange(event: Event): void;
-    playMusic(): Promise<void>;
-    togglePlay(): Promise<void>;
-    seekAudio(): void;
-    adjustVolume(): void;
-    updateAudio(): void;
+  setupAudioContext(): void;
+  handleFileChange(event: Event): void;
+  playMusic(): Promise<void>;
+  togglePlay(): Promise<void>;
+  seekAudio(): void;
+  adjustVolume(): void;
+  updateAudio(): void;
 }
 
 export class AudioUtility implements IAudioUtility {
@@ -20,17 +22,17 @@ export class AudioUtility implements IAudioUtility {
   private bufferLength: number;
   private audioElement: HTMLAudioElement;
   public isPlaying: boolean;
-  private progress: number;
-  private volume: number;
+  public progress: number;
+  public  volume: number;
   private updateCallback: () => void;
   private threeJsUtility: IThreeJsUtility;
   private simplexNoiseUtility: ISimplexNoiseUtility;
 
-  constructor(audioElement: HTMLAudioElement, updateCallback: () => void, threeJsUtility: IThreeJsUtility, simplexNoiseUtility: ISimplexNoiseUtility) {
+  constructor(audioElement: HTMLAudioElement, progress, volume, updateCallback: () => void, threeJsUtility: IThreeJsUtility, simplexNoiseUtility: ISimplexNoiseUtility) {
     this.audioElement = audioElement;
     this.isPlaying = false;
-    this.progress = 0;
-    this.volume = 0.5;
+    this.progress = progress;
+    this.volume = volume;
     this.updateCallback = updateCallback;
     this.threeJsUtility = threeJsUtility;
     this.simplexNoiseUtility = simplexNoiseUtility;
@@ -83,7 +85,13 @@ export class AudioUtility implements IAudioUtility {
   }
 
   seekAudio(): void {
-    this.audioElement.currentTime = (this.audioElement.duration * this.progress) / 100;
+    if(this.audioElement){
+      console.log("1", this.audioElement.currentTime);
+      console.log("2", (this.audioElement.duration * this.progress) / 1000); 
+      console.log("3", this.audioElement.duration)
+      console.log("4", this.progress)
+      //this.audioElement.currentTime = (this.audioElement.duration * this.progress) / 100;
+    }
   }
 
   adjustVolume(): void {

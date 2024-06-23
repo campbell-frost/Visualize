@@ -47,7 +47,7 @@ onMounted(() => {
   if (container.value && audio.value) {
     threeJsUtility = new ThreeJsUtility(container.value);
     simplexNoiseUtility = new SimplexNoiseUtility(Number(intensity.value));
-    audioUtility = new AudioUtility(audio.value, () => { }, threeJsUtility, simplexNoiseUtility);
+    audioUtility = new AudioUtility(audio.value, progress, volume, () => { }, threeJsUtility, simplexNoiseUtility);
 
     threeJsUtility.addLighting();
     threeJsUtility.animate();
@@ -92,7 +92,6 @@ onMounted(() => {
 </script>
 <style scoped>
 #controls {
-  display: flex;
   align-items: center;
   gap: 10px;
 }
