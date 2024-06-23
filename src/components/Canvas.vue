@@ -22,8 +22,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
 import * as THREE from "three";
-import { ThreeJsUtility} from "../utils/threeJsUtility";
-import { SimplexNoiseUtility } from "../utils/simplexNoiseUtility";
+import IThreeJsUtility, { ThreeJsUtility} from "../utils/threeJsUtility";
+import ISimplexNoiseUtility, { SimplexNoiseUtility } from "../utils/simplexNoiseUtility";
 
 // Refs for DOM elements
 const mainFile = ref<HTMLInputElement | null>(null);
@@ -31,8 +31,8 @@ const audio = ref<HTMLAudioElement | null>(null);
 const container = ref<HTMLElement | null>(null);
 
 // Utility classes
-let threeJsUtility: ThreeJsUtility| null = null;
-let simplexNoiseUtility: SimplexNoiseUtility | null = null;
+let threeJsUtility: IThreeJsUtility| null = null;
+let simplexNoiseUtility: ISimplexNoiseUtility | null = null;
 
 let context: AudioContext;
 let analyser: AnalyserNode;

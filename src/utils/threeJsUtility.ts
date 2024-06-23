@@ -1,5 +1,19 @@
 import * as THREE from "three";
 
+export default interface IThreeJsUtility {
+  scene: THREE.Scene;
+  group: THREE.Group;
+  camera: THREE.PerspectiveCamera;
+  object: THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshLambertMaterial>;
+  renderer: THREE.WebGLRenderer;
+
+  createObject(): void;
+  reshapeObject(radius: number, detail: number): void;
+  addLighting(): void;
+  animate(): void;
+  resize(width: number, height: number): void;
+}
+
 export class ThreeJsUtility {
   scene: THREE.Scene;
   group: THREE.Group;
