@@ -3,51 +3,16 @@
     <div id="execute" ref="execute">
       <v-card class="m-4 p-4">
         <v-card-item>
-          <v-file-input
-            clearable
-            chips
-            variant="outlined"
-            label="Upload a music file"
-            type="file"
-            id="mainFile"
-            ref="mainFile"
-            class="mt-5"
-            prepend-icon=""
-          />
+          <v-file-input clearable chips variant="outlined" label="Upload a music file" type="file" id="mainFile"
+            ref="mainFile" class="mt-5" prepend-icon="" />
         </v-card-item>
         <audio id="audio" ref="audio" accept="audio/*"></audio>
         <v-card-item id="controls">
-          <v-btn
-            @click="togglePlay"
-            :icon="isPlaying ? 'mdi-pause' : 'mdi-play'"
-            class="play-pause-btn my-2 mx-2"
-          ></v-btn>
-          <input
-            type="range"
-            v-model="progress"
-            @change="seekAudio"
-            min="0"
-            max="100"
-            step="1"
-            class="slider"
-          />
-          <input
-            type="range"
-            v-model="volume"
-            @change="adjustVolume"
-            min="0"
-            max="1"
-            step="0.01"
-            class="slider"
-          />
-          <input
-            type="range"
-            v-model="intensity"
-            min="0"
-            max="100"
-            step="1"
-            class="slider"
-          />
+          <v-btn @click="togglePlay" :icon="isPlaying ? 'mdi-pause' : 'mdi-play'"
+            class="play-pause-btn my-2 mx-2"></v-btn>
+          <input type="range" v-model="progress" @change="seekAudio" min="0" max="100" step="1" class="slider" />
+          <input type="range" v-model="volume" @change="adjustVolume" min="0" max="1" step="0.01" class="slider" />
+          <input type="range" v-model="intensity" min="0" max="100" step="1" class="slider" />
         </v-card-item>
       </v-card>
     </div>
@@ -84,6 +49,8 @@ const isPlaying = ref(false);
 const progress = ref(0);
 const volume = ref(0.5);
 const intensity = ref<number>(9);
+const RF = 0.00001;
+type Mesh = THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshLambertMaterial>;
 
 // Utility functions
 const average = (arr: Uint8Array) => arr.reduce((sum, b) => sum + b, 0) / arr.length;
@@ -218,20 +185,20 @@ const addLighting = () => {
 
 const updateAudio = () => {
   analyser.getByteFrequencyData(dataArray);
+  const halfLength = dataArray.length / 2;
 
-  const lowerHalfData = dataArray.slice(0, dataArray.length / 2);
-  const upperHalfData = dataArray.slice(dataArray.length / 2);
+  const [lowerHalfData, upperHalfData] = [
+    dataArray.slice(0, halfLength),
+    dataArray.slice(halfLength)
+  ];
 
-  const lowerMax = maximum(lowerHalfData);
-  const upperAvg = average(upperHalfData);
-
-  const lowerMaxFr = lowerMax / lowerHalfData.length;
-  const upperAvgFr = upperAvg / upperHalfData.length;
+  const lowerMaxFr = maximum(lowerHalfData) / lowerHalfData.length;
+  const upperAvgFr = average(upperHalfData) / upperHalfData.length;
 
   tuneObject(
     object,
     modulation(Math.pow(lowerMaxFr, 0.8), 0, 1, 0, 8),
-    modulation(upperAvgFr, 0, 1, 0, 4),
+    modulation(upperAvgFr, 0, 1, 0, 4)
   );
 
   group.rotation.y += 0.005;
@@ -239,28 +206,23 @@ const updateAudio = () => {
   requestAnimationFrame(updateAudio);
 };
 
-const tuneObject = (
-  mesh: THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshLambertMaterial>,
-  bassFr: number,
-  treFr: number,
-) => {
-  const geometry = mesh.geometry as THREE.IcosahedronGeometry;
+const tuneObject = (mesh: Mesh, bassFr: number, treFr: number) => {
+  const geometry = mesh.geometry;
   const positionAttribute = geometry.getAttribute("position");
   const vertex = new THREE.Vector3();
   const offset = geometry.parameters.radius;
-
   const time = window.performance.now();
-  const rf = 0.00001;
 
   for (let i = 0; i < positionAttribute.count; i++) {
-    vertex.fromBufferAttribute(positionAttribute, i);
-    vertex.normalize();
-    const distance =
-      offset +
-      bassFr +
-      noise(vertex.x + time * rf * 7, vertex.y + time * rf * 8, vertex.z + time * rf * 9) *
-        Number(intensity.value) *
-        treFr;
+    vertex.fromBufferAttribute(positionAttribute, i).normalize();
+
+    const distance = offset + bassFr +
+      noise(
+        vertex.x + time * RF * 70,
+        vertex.y + time * RF * 800,
+        vertex.z + time * RF * 9
+      ) * Number(intensity.value) * treFr;
+
     vertex.multiplyScalar(distance);
     positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
   }
@@ -349,72 +311,72 @@ onMounted(() => {
 });
 </script>
 <style scoped>
-  #controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+#controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#execute {
+  width: 100%;
+  height: 100vh;
+}
+
+.range-slider {
+  width: 100%;
+}
+
+.slider {
+  width: calc(100% - (73px));
+  height: 10px;
+  border-radius: 5px;
+  background: grey;
+  outline: none;
+  padding: 0;
+  margin: 0;
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: black;
+    cursor: pointer;
+    transition: background .15s ease-in-out;
+
+    &:hover {
+      background: "teal";
+    }
   }
 
-  #execute {
-    width: 100%;
-    height: 100vh;
+  &:active::-webkit-slider-thumb {
+    background: "red";
   }
 
-  .range-slider {
-    width: 100%;
+  &::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border: 0;
+    border-radius: 50%;
+    background: "teal";
+    cursor: pointer;
+    transition: background .15s ease-in-out;
+
+    &:hover {
+      background: "red";
+    }
   }
 
-  .slider {
-    width: calc(100% - ( 73px));
-    height: 10px;
-    border-radius: 5px;
-    background: grey;
-    outline: none;
-    padding: 0;
-    margin: 0;
+  &:active::-moz-range-thumb {
+    background: "red";
+  }
+
+  &:focus {
 
     &::-webkit-slider-thumb {
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: black;
-      cursor: pointer;
-      transition: background .15s ease-in-out;
-
-      &:hover {
-        background: "teal";
-      }
-    }
-
-    &:active::-webkit-slider-thumb {
-      background: "red";
-    }
-
-    &::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
-      border: 0;
-      border-radius: 50%;
-      background: "teal";
-      cursor: pointer;
-      transition: background .15s ease-in-out;
-
-      &:hover {
-        background: "red";
-      }
-    }
-
-    &:active::-moz-range-thumb {
-      background: "red";
-    }
-
-    &:focus {
-
-      &::-webkit-slider-thumb {
-        box-shadow: 0 0 0 3px "red",
-                    0 0 0 6px "teal";
-      }
+      box-shadow: 0 0 0 3px "red",
+        0 0 0 6px "teal";
     }
   }
+}
 </style>
