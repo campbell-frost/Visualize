@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <div id="execute" ref="execute">
+    <div id="execute" ref="container">
       <v-card class="m-4 p-4">
         <v-card-item>
           <v-file-input clearable chips variant="outlined" label="Upload a music file" type="file" id="mainFile"
@@ -20,31 +20,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import * as THREE from "three";
 import { createNoise3D } from "simplex-noise";
 
-import * as dat from "dat.gui";
+import { ThreeJSSetup } from "../utils/threeJSSetup";
 
 // Refs for DOM elements
 const mainFile = ref<HTMLInputElement | null>(null);
 const audio = ref<HTMLAudioElement | null>(null);
-const execute = ref<HTMLDivElement | null>(null);
+const container = ref<HTMLElement | null>(null);
 
-// Reactive state variables
+// Helper classes
+let threeJSSetup: ThreeJSSetup | null = null;
+
 const noise = createNoise3D();
-
-const gui = new dat.GUI();
 
 let context: AudioContext;
 let analyser: AnalyserNode;
 let dataArray: Uint8Array;
 let bufferLength: number;
-let scene: THREE.Scene;
-let group: THREE.Group;
-let camera: THREE.PerspectiveCamera;
-let renderer: THREE.WebGLRenderer;
-let object: THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshLambertMaterial>;
 const isPlaying = ref(false);
 const progress = ref(0);
 const volume = ref(0.5);
@@ -109,81 +104,8 @@ const playMusic = async () => {
   isPlaying.value = true;
 };
 
-const createScene = () => {
-  scene = new THREE.Scene();
-  group = new THREE.Group();
-
-  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.set(0, 0, 100);
-  camera.lookAt(scene.position);
-
-  scene.add(group);
-};
-const createObject = () => {
-  const radius = 10;
-  const detail = 3;
-  const geometry = new THREE.IcosahedronGeometry(radius, detail);
-  const material = new THREE.MeshLambertMaterial({
-    color: "#f3f3f3",
-    wireframe: true,
-  });
-
-  object = new THREE.Mesh(geometry, material);
-  group.add(object);
-};
-// options for the GUI
-const options = {
-  color: 0x0000ff,
-  speed: 0.01,
-  wireframe: false,
-};
-
-// changes the color of the object
-gui.addColor(options, "color").onChange(function (e) {
-  object.material.color.set(e);
-});
-
-// manipulates the rotation speed of the object
-gui.add(options, "speed", 0, 0.1);
-
-// manipulates the wireframe by check-mark button
-gui.add(options, "wireframe").onChange(function (e) {
-  object.material.wireframe = e;
-});
-
-// manipulates the rotation speed
-let pace = 0;
-
-// value of the object that will be manipulated by GUI
-const objectValue = {
-  radius: 1,
-  detail: 0,
-};
-
-// Reshape the object size using the manipulated value
-const reshapeObject = () => {
-  const newObject = new THREE.IcosahedronGeometry(objectValue.radius, objectValue.detail);
-  object.geometry.dispose();
-  object.geometry = newObject;
-};
-
-// Code for Object GUI manipulation
-const objectFolder = gui.addFolder("Object");
-const objectPropertiesFolder = objectFolder.addFolder("Properties");
-objectPropertiesFolder.add(objectValue, "radius", 0.1, 10).onChange(reshapeObject);
-objectPropertiesFolder.add(objectValue, "detail", 0, 5).step(1).onChange(reshapeObject);
-
-const addLighting = () => {
-  const ambientLight = new THREE.AmbientLight(0xaaaaaa);
-  scene.add(ambientLight);
-
-  const spotLight = new THREE.SpotLight(0xffffff, 0.9);
-  spotLight.position.set(-10, 40, 20);
-  spotLight.castShadow = true;
-  scene.add(spotLight);
-};
-
 const updateAudio = () => {
+  if(!threeJSSetup) return;
   analyser.getByteFrequencyData(dataArray);
   const halfLength = dataArray.length / 2;
 
@@ -196,13 +118,13 @@ const updateAudio = () => {
   const upperAvgFr = average(upperHalfData) / upperHalfData.length;
 
   tuneObject(
-    object,
+    threeJSSetup.object,
     modulation(Math.pow(lowerMaxFr, 0.8), 0, 1, 0, 8),
     modulation(upperAvgFr, 0, 1, 0, 4)
   );
 
-  group.rotation.y += 0.005;
-  renderer.render(scene, camera);
+  threeJSSetup.group.rotation.y += 0.005;
+  threeJSSetup.renderer.render(threeJSSetup.scene,threeJSSetup.camera);
   requestAnimationFrame(updateAudio);
 };
 
@@ -228,47 +150,6 @@ const tuneObject = (mesh: Mesh, bassFr: number, treFr: number) => {
   }
 
   positionAttribute.needsUpdate = true;
-};
-
-const initVisualizer = () => {
-  mainFile.value?.addEventListener("change", handleFileChange);
-
-  audio.value?.addEventListener("play", playMusic);
-
-  createScene();
-  createObject();
-  addLighting();
-
-  const container = execute.value; // Reference to the container div
-  const width = container?.clientWidth || window.innerWidth;
-  const height = container?.clientHeight || window.innerHeight;
-
-  renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-  renderer.setSize(width, height);
-  container?.appendChild(renderer.domElement);
-
-  window.addEventListener("resize", resizeWindow);
-
-  animate(1);
-};
-const resizeWindow = () => {
-  const container = execute.value; // Reference to the container div
-  const width = container?.clientWidth || window.innerWidth;
-  const height = container?.clientHeight || window.innerHeight;
-
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
-  renderer.setSize(width, height);
-};
-
-// Performs animation based on given time
-const animate = (time: number) => {
-  object.rotation.y = time / 1000;
-  pace += options.speed;
-  // Bounces the object
-  object.position.y = 4 * Math.abs(Math.sin(pace));
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
 };
 
 const togglePlay = async () => {
@@ -299,13 +180,44 @@ const adjustVolume = () => {
 };
 
 onMounted(() => {
-  setupAudioContext();
-  initVisualizer();
+  if (container.value) {
+    threeJSSetup = new ThreeJSSetup(container.value);
+    threeJSSetup.addLighting();
+    threeJSSetup.animate();
 
-  if (audio.value) {
-    audio.value.volume = volume.value;
-    audio.value.addEventListener("timeupdate", () => {
-      progress.value = (audio.value!.currentTime / audio.value!.duration) * 100;
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const { width, height } = entry.contentRect;
+        threeJSSetup?.resize(width, height);
+      }
+    });
+
+    resizeObserver.observe(container.value);
+
+    // Set up audio context
+    setupAudioContext();
+
+    // Add event listeners
+    mainFile.value?.addEventListener("change", handleFileChange);
+    audio.value?.addEventListener("play", playMusic);
+
+    if (audio.value) {
+      audio.value.volume = volume.value;
+      audio.value.addEventListener("timeupdate", () => {
+        progress.value = (audio.value!.currentTime / audio.value!.duration) * 100;
+      });
+    }
+
+    onUnmounted(() => {
+      resizeObserver.disconnect();
+      if (threeJSSetup) {
+        threeJSSetup.renderer.dispose();
+        threeJSSetup.object.geometry.dispose();
+        (threeJSSetup.object.material as THREE.Material).dispose();
+      }
+      // Remove event listeners
+      mainFile.value?.removeEventListener("change", handleFileChange);
+      audio.value?.removeEventListener("play", playMusic);
     });
   }
 });
