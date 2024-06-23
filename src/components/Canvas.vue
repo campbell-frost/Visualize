@@ -10,9 +10,9 @@
         <v-card-item id="controls">
           <v-btn @click="audioUtility?.togglePlay()" :icon="audioUtility?.isPlaying ? 'mdi-pause' : 'mdi-play'"
             class="play-pause-btn my-2 mx-2"></v-btn>
-          <input type="range" v-model="progress" @change="audioUtility?.seekAudio()" min="0" max="100" step="1"
+          <input type="range" v-model="progress" @change="audioUtility?.seekAudio(progress)" min="0" max="100" step="1"
             class="slider" />
-          <input type="range" v-model="volume" @change="audioUtility?.adjustVolume()" min="0" max="1" step="0.01"
+          <input type="range" v-model="volume" @change="audioUtility?.adjustVolume(volume)" min="0" max="1" step="0.01"
             class="slider" />
           <input type="range" v-model="intensity" min="0" max="100" step="1" class="slider" />
         </v-card-item>

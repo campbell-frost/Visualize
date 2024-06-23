@@ -3,15 +3,13 @@ import ISimplexNoiseUtility from "./simplexNoiseUtility";
 
 export default interface IAudioUtility {
   isPlaying: boolean;
-  progress: number;
-  volume: number;
 
   setupAudioContext(): void;
   handleFileChange(event: Event): void;
   playMusic(): Promise<void>;
   togglePlay(): Promise<void>;
-  seekAudio(): void;
-  adjustVolume(): void;
+  seekAudio(progress: number): void;
+  adjustVolume(volume: number): void;
   updateAudio(): void;
 }
 
@@ -84,13 +82,13 @@ export class AudioUtility implements IAudioUtility {
     }
   }
 
-  seekAudio(): void {
-    const newTime = (this.audioElement.duration * this.progress) / 100;
+  seekAudio(progress: number): void {
+    const newTime = (this.audioElement.duration * progress) / 100;
     this.audioElement.currentTime = newTime;
   }
 
-  adjustVolume(): void {
-    this.audioElement.volume = this.volume;
+  adjustVolume(volume: number): void {
+    this.audioElement.volume = volume;
   }
 
   updateAudio(): void {
