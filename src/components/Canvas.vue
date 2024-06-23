@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import * as THREE from "three";
 import IThreeJsUtility, { ThreeJsUtility } from "../utils/threeJsUtility";
 import ISimplexNoiseUtility, { SimplexNoiseUtility } from "../utils/simplexNoiseUtility";
