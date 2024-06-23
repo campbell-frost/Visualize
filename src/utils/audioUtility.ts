@@ -4,7 +4,7 @@ import ISimplexNoiseUtility from "./simplexNoiseUtility";
 export default interface IAudioUtility {
   isPlaying: boolean;
   progress: number;
-  volume: number; 
+  volume: number;
 
   setupAudioContext(): void;
   handleFileChange(event: Event): void;
@@ -23,12 +23,12 @@ export class AudioUtility implements IAudioUtility {
   private audioElement: HTMLAudioElement;
   public isPlaying: boolean;
   public progress: number;
-  public  volume: number;
+  public volume: number;
   private updateCallback: () => void;
   private threeJsUtility: IThreeJsUtility;
   private simplexNoiseUtility: ISimplexNoiseUtility;
 
-  constructor(audioElement: HTMLAudioElement, progress, volume, updateCallback: () => void, threeJsUtility: IThreeJsUtility, simplexNoiseUtility: ISimplexNoiseUtility) {
+  constructor(audioElement: HTMLAudioElement, progress: number, volume: number, updateCallback: () => void, threeJsUtility: IThreeJsUtility, simplexNoiseUtility: ISimplexNoiseUtility) {
     this.audioElement = audioElement;
     this.isPlaying = false;
     this.progress = progress;
@@ -85,13 +85,8 @@ export class AudioUtility implements IAudioUtility {
   }
 
   seekAudio(): void {
-    if(this.audioElement){
-      console.log("1", this.audioElement.currentTime);
-      console.log("2", (this.audioElement.duration * this.progress) / 1000); 
-      console.log("3", this.audioElement.duration)
-      console.log("4", this.progress)
-      //this.audioElement.currentTime = (this.audioElement.duration * this.progress) / 100;
-    }
+    const newTime = (this.audioElement.duration * this.progress) / 100;
+    this.audioElement.currentTime = newTime;
   }
 
   adjustVolume(): void {

@@ -21,9 +21,8 @@
   </v-container>
 </template>
 
-
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import * as THREE from "three";
 import IThreeJsUtility, { ThreeJsUtility } from "../utils/threeJsUtility";
 import ISimplexNoiseUtility, { SimplexNoiseUtility } from "../utils/simplexNoiseUtility";
@@ -47,7 +46,7 @@ onMounted(() => {
   if (container.value && audio.value) {
     threeJsUtility = new ThreeJsUtility(container.value);
     simplexNoiseUtility = new SimplexNoiseUtility(Number(intensity.value));
-    audioUtility = new AudioUtility(audio.value, progress, volume, () => { }, threeJsUtility, simplexNoiseUtility);
+    audioUtility = new AudioUtility(audio.value, progress.value, volume.value, () => { }, threeJsUtility, simplexNoiseUtility);
 
     threeJsUtility.addLighting();
     threeJsUtility.animate();
@@ -90,6 +89,7 @@ onMounted(() => {
   }
 });
 </script>
+
 <style scoped>
 #controls {
   align-items: center;
