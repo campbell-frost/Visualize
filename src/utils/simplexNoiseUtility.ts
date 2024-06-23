@@ -3,19 +3,15 @@ import { createNoise3D, NoiseFunction3D } from "simplex-noise";
 
 type Mesh = THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshLambertMaterial>;
 
-export default interface ISimplexNoiseUtility {
-  noise: NoiseFunction3D;
-  RF: number;
-  intensity: number;
-  
+export default interface ISimplexNoiseUtility {  
   generateNoise(vertex: THREE.Vector3, time: number): number;
   tuneObject(mesh:Mesh, bassFr: number, treFr: number): void;
 }
 
 export class SimplexNoiseUtility implements ISimplexNoiseUtility {
-  noise: NoiseFunction3D;
-  RF: number;
-  intensity: number;
+  private noise: NoiseFunction3D;
+  private RF: number;
+  private intensity: number;
 
   constructor(intensity: number, RF = 0.00001) {
     this.noise = createNoise3D();

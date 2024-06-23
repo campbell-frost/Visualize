@@ -15,11 +15,11 @@ export default interface IThreeJsUtility {
 }
 
 export class ThreeJsUtility {
-  scene: THREE.Scene;
-  group: THREE.Group;
-  camera: THREE.PerspectiveCamera;
-  object: THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshLambertMaterial>;
-  renderer: THREE.WebGLRenderer;
+  public scene: THREE.Scene;
+  public group: THREE.Group;
+  public camera: THREE.PerspectiveCamera;
+  public object: THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshLambertMaterial>;
+  public renderer: THREE.WebGLRenderer;
 
   constructor(container: HTMLElement) {
     this.scene = new THREE.Scene();
