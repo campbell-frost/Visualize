@@ -1,5 +1,3 @@
-// three-js.ts
-
 import * as THREE from "three";
 
 export class ThreeJSSetup {
