@@ -5,7 +5,7 @@ type Mesh = THREE.Mesh<THREE.IcosahedronGeometry, THREE.MeshLambertMaterial>;
 
 export default interface ISimplexNoiseUtility {  
   generateNoise(vertex: THREE.Vector3, time: number): number;
-  tuneObject(mesh:Mesh, bassFr: number, treFr: number): void;
+  tuneObject(mesh: Mesh, bassFr: number, treFr: number): void;
 }
 
 export class SimplexNoiseUtility implements ISimplexNoiseUtility {
@@ -31,15 +31,18 @@ export class SimplexNoiseUtility implements ISimplexNoiseUtility {
     const geometry = mesh.geometry;
     const positionAttribute = geometry.getAttribute("position");
     const vertex = new THREE.Vector3();
-    const offset = geometry.parameters.radius;
-    const time = window.performance.now();
+    const offset = geometry.parameters.radius || 1; // Ensure radius has a default value
+    const time = window.performance.now() * 0.001; // Use seconds instead of milliseconds
 
     for (let i = 0; i < positionAttribute.count; i++) {
       vertex.fromBufferAttribute(positionAttribute, i).normalize();
 
-      const distance = offset + bassFr +
-        this.generateNoise(vertex, time) * treFr;
+      let noiseValue = this.generateNoise(vertex, time);
+      let distance = offset + bassFr + noiseValue * treFr;
 
+      // Clamp distance to reasonable values
+      distance = THREE.MathUtils.clamp(distance, offset * 0.5, offset * 1.5);
+      console.log(distance , "i hate you so much")
       vertex.multiplyScalar(distance);
       positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z);
     }
